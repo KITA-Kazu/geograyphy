@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 地理探検クイズ 💡</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7B68EE; /* Lavender */
+            --secondary-color: #87CEEB; /* SkyBlue */
+            --accent-color: #FFD700; /* Gold */
+            --bg-color: #E0FFFF; /* LightCyan */
+            --text-color: #333;
+            --light-text-color: #fff;
+            --success-color: #32CD32; /* LimeGreen */
+            --warning-color: #FF8C00; /* DarkOrange */
+            --danger-color: #FF6347; /* Tomato */
+            --info-color: #1E90FF; /* DodgerBlue */
+        }
+
+        body {
+            font-family: 'Kosugi Maru', 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50px; left: -50px;
+            width: 200px; height: 200px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            filter: blur(50px);
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -50px; right: -50px;
+            width: 250px; height: 250px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+        }
+
+        .quiz-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 750px;
+            padding: 40px;
+            text-align: center;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+            transform: scale(1);
+            transition: transform 0.3s ease-out;
+        }
+        .quiz-container.shaking {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+            animation: fadeInDown 1s ease-out;
+        }
+        @keyframes fadeInDown {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #question-area p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-weight: bold;
+            line-height: 1.4;
+            animation: fadeIn 1s ease-out;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .choice-button {
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: 15px;
+            padding: 18px 25px;
+            font-size: 1.2em;
+            color: var(--light-text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-button:hover {
+            background-color: #64B5F6; /* Slightly darker secondary */
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .choice-button.selected {
+            background-color: var(--primary-color);
+            transform: scale(1.02);
+            box-shadow: 0 0 0 4px var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+
+        .choice-button.correct {
+            background-color: var(--success-color);
+            border: 2px solid #228B22; /* ForestGreen */
+            color: var(--light-text-color);
+            font-weight: bold;
+        }
+
+        .choice-button.wrong {
+            background-color: var(--danger-color);
+            border: 2px solid #DC143C; /* Crimson */
+            color: var(--light-text-color);
+            font-weight: bold;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .action-button {
+            background-color: var(--primary-color);
+            color: var(--light-text-color);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .action-button:hover {
+            background-color: #6A5ACD; /* Slightly darker primary */
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        .action-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #hint-display {
+            background-color: rgba(255, 250, 205, 0.8); /* LemonChiffon */
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            padding: 18px;
+            margin-top: 25px;
+            font-size: 1.1em;
+            color: #8B4513; /* SaddleBrown */
+            text-align: left;
+            display: none;
+            animation: slideInUp 0.5s ease-out;
+        }
+        #hint-display h3 {
+            color: var(--warning-color);
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 1.3em;
+        }
+
+        #explanation-area {
+            background-color: rgba(240, 248, 255, 0.9); /* AliceBlue */
+            border: 2px solid var(--info-color);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 1.1em;
+            color: #000080; /* Navy */
+            text-align: left;
+            display: none;
+            animation: slideInUp 0.5s ease-out;
+        }
+        #explanation-area h3 {
+            color: var(--info-color);
+            margin-top: 0;
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 1.4em;
+        }
+
+        @keyframes slideInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #next-button {
+            background-color: var(--success-color);
+            margin-top: 25px;
+        }
+        #next-button:hover {
+            background-color: #2E8B57; /* SeaGreen */
+        }
+
+        .start-screen, .end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .start-screen h2, .end-screen h2 {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            animation: bounceIn 1s ease-out;
+        }
+        .end-screen h2 {
+            color: var(--success-color);
+        }
+        @keyframes bounceIn {
+            0%, 20%, 40%, 60%, 80%, 100% {
+                animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            0% { opacity: 0; transform: scale3d(0.3, 0.3, 0.3); }
+            20% { transform: scale3d(1.1, 1.1, 1.1); }
+            40% { transform: scale3d(0.9, 0.9, 0.9); }
+            60% { opacity: 1; transform: scale3d(1.03, 1.03, 1.03); }
+            80% { transform: scale3d(0.97, 0.97, 0.97); }
+            100% { opacity: 1; transform: scale3d(1, 1, 1); }
+        }
+
+
+        #start-quiz-button {
+            background-color: var(--success-color);
+            font-size: 1.5em;
+            padding: 20px 40px;
+        }
+        #start-quiz-button:hover {
+            background-color: #2E8B57;
+        }
+
+        #score-display, #timer-display {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            animation: fadeIn 1s ease-out;
+        }
+        #timer-display {
+            color: var(--danger-color);
+        }
+        .score-value, .timer-value {
+            color: var(--warning-color);
+        }
+        .timer-red {
+            color: var(--danger-color);
+        }
+
+        .final-score {
+            font-size: 2.5em;
+            color: var(--accent-color);
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            animation: popIn 0.8s ease-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        #restart-button {
+            background-color: var(--primary-color);
+            font-size: 1.3em;
+            margin-top: 30px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .quiz-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            #question-area p {
+                font-size: 1.2em;
+            }
+            .choice-button, .action-button {
+                font-size: 1em;
+                padding: 12px 15px;
+            }
+            #start-quiz-button {
+                font-size: 1.2em;
+                padding: 15px 30px;
+            }
+            .buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            #score-display, #timer-display {
+                font-size: 1.1em;
+            }
+            .final-score {
+                font-size: 2em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="quiz-container" id="quiz-app">
+        <h1>🌍 地理探検クイズ 💡</h1>
+
+        <div id="start-screen" class="start-screen">
+            <h2>国と盛んな産業を結びつけよう！</h2>
+            <p>このクイズでは、世界各地の国々で特に盛んな産業について学びます。ヒントを参考にしながら、2分間で高得点を目指そう！</p>
+            <button id="start-quiz-button" class="action-button">クイズを始める</button>
+        </div>
+
+        <div id="quiz-screen" style="display:none;">
+            <div id="score-display">スコア: <span class="score-value" id="current-score">0</span>点</div>
+            <div id="timer-display">残り時間: <span class="timer-value" id="time-left">120</span>秒</div>
+            
+            <div id="question-area">
+                <p id="question-text"></p>
+            </div>
+            
+            <div class="choices" id="choices-container">
+                <!-- 選択肢がここに挿入されます -->
+            </div>
+            
+            <div class="buttons">
+                <button id="hint-button" class="action-button" style="background-color: var(--warning-color);">ヒントを見る</button>
+                <button id="submit-button" class="action-button">解答する</button>
+            </div>
+
+            <div id="hint-display" style="display:none;">
+                <h3>💡 ヒント:</h3>
+                <p id="hint-text"></p>
+            </div>
+
+            <div id="explanation-area" style="display:none;">
+                <h3>📚 解説:</h3>
+                <p id="explanation-text"></p>
+                <button id="next-button" class="action-button">次の問題へ</button>
+            </div>
+        </div>
+
+        <div id="end-screen" class="end-screen" style="display:none;">
+            <h2>🎉 クイズ終了！ 🎉</h2>
+            <p>2分間お疲れ様でした！</p>
+            <p class="final-score">最終スコア: <span id="final-score-value">0</span>点</p>
+            <button id="restart-button" class="action-button">もう一度遊ぶ</button>
+        </div>
+    </div>
+
+    <script>
+        const easy_questions = [
+            {
+                question: "オーストラリアで、特に盛んな産業はどれでしょう？",
+                choices: ["漁業", "酪農", "IT産業", "観光業"],
+                answerIndex: 1,
+                hint: "広大な土地と牧畜に適した気候があります。",
+                explanation: "オーストラリアは広大な牧草地を生かした酪農や羊の飼育が盛んです。肉や羊毛、乳製品などが多く生産され、世界中に輸出されています。牧畜は第一次産業に分類されます。"
+            },
+            {
+                question: "ノルウェーで、特に盛んな産業はどれでしょう？",
+                choices: ["漁業", "自動車産業", "農業", "半導体産業"],
+                answerIndex: 0,
+                hint: "複雑な海岸線と豊かな漁場に恵まれています。",
+                explanation: "ノルウェーはフィヨルド地形に代表される長い海岸線と、北大西洋の豊かな漁場を持つため、漁業が非常に盛んです。特にサケの養殖は世界的に有名です。漁業は第一次産業です。"
+            },
+            {
+                question: "ブラジルで、特に盛んな産業はどれでしょう？",
+                choices: ["精密機械工業", "コーヒー豆の栽培", "石油化学工業", "映画産業"],
+                answerIndex: 1,
+                hint: "世界最大の生産量を誇る農産物があります。",
+                explanation: "ブラジルは世界最大のコーヒー豆生産国であり、他にも大豆やサトウキビなどの栽培も盛んです。広大な国土と気候を生かした農業が主要産業の一つです。農業は第一次産業です。"
+            },
+            {
+                question: "日本で、特に盛んな産業はどれでしょう？",
+                choices: ["石炭採掘業", "自動車産業", "漁業", "綿花栽培"],
+                answerIndex: 1,
+                hint: "世界中で愛される車をたくさん作っています。",
+                explanation: "日本は技術力の高さと品質管理の徹底により、自動車産業が世界をリードしています。多くの自動車が海外に輸出され、日本の経済を支えています。自動車産業は第二次産業です。"
+            },
+            {
+                question: "ドイツで、特に盛んな産業はどれでしょう？",
+                choices: ["観光業", "IT産業", "機械工業", "漁業"],
+                answerIndex: 2,
+                hint: "精密な機械や高級車が有名です。",
+                explanation: "ドイツは古くから鉄鋼業が発展し、それを基盤とした機械工業（自動車、工作機械など）が非常に発達しています。高い技術力と品質で知られています。機械工業は第二次産業です。"
+            },
+            {
+                question: "中国で、特に近年発展している産業はどれでしょう？",
+                choices: ["伝統工芸品製造", "宇宙開発産業", "IT関連製品製造", "酪農"],
+                answerIndex: 2,
+                hint: "スマートフォンやパソコン部品を大量に生産しています。",
+                explanation: "中国は「世界の工場」と呼ばれ、近年は特にIT関連製品の生産が急速に伸びています。スマートフォンやパソコンの部品、家電製品など、多くの製品が中国で作られています。IT関連製品製造は第二次産業です。"
+            },
+            {
+                question: "スイスで、特に盛んな産業はどれでしょう？",
+                choices: ["重工業", "農業", "金融業", "漁業"],
+                answerIndex: 2,
+                hint: "永世中立国として国際的な信頼があります。",
+                explanation: "スイスは永世中立国としての安定性と高い信頼性から、世界の金融センターの一つとして知られています。銀行や保険などの金融サービスが主要産業です。金融業は第三次産業です。"
+            },
+            {
+                question: "ハワイ（アメリカ合衆国）で、特に盛んな産業はどれでしょう？",
+                choices: ["農業", "IT産業", "観光業", "石油化学工業"],
+                answerIndex: 2,
+                hint: "美しい海と温暖な気候が世界中から人々を惹きつけます。",
+                explanation: "ハワイは温暖な気候と美しい自然に恵まれ、世界中から多くの観光客が訪れます。ホテル、レストラン、レジャー施設などが発展し、観光業が経済の大きな柱となっています。観光業は第三次産業です。"
+            },
+            {
+                question: "インドで、特に近年発展が著しい産業はどれでしょう？",
+                choices: ["鉄鋼業", "伝統漁業", "ソフトウェア開発", "茶葉栽培"],
+                answerIndex: 2,
+                hint: "英語を話せる優秀な人材がたくさんいます。",
+                explanation: "インドは理系の教育水準が高く、英語を話せる人材が豊富なため、ソフトウェア開発やITサービス業が急速に発展しています。世界中の企業からシステム開発を受注しています。ソフトウェア開発は第三次産業です。"
+            },
+            {
+                question: "サウジアラビアで、特に盛んな産業はどれでしょう？",
+                choices: ["観光業", "農業", "石油・天然ガス産業", "漁業"],
+                answerIndex: 2,
+                hint: "地下に豊富な資源があります。",
+                explanation: "サウジアラビアは世界有数の石油・天然ガスの産油国であり、その輸出が経済の大きな柱となっています。近年は産業の多角化も進められています。石油・天然ガス産業は第二次産業（採掘は第一次、加工は第二次）に分類されることもありますが、ここでは国の主要産業として広く捉えます。"
+            }
+        ];
+
+        const hard_questions = [
+            {
+                question: "フィンランドで、特に国際競争力のある産業はどれでしょう？",
+                choices: ["造船業", "林業・製紙業", "米作農業", "自動車製造"],
+                answerIndex: 1,
+                hint: "国土の多くが森林に覆われています。",
+                explanation: "フィンランドは国土の約7割が森林であるため、林業が非常に盛んです。その資源を生かした製紙業や木材加工業が発達しており、世界の市場で高い競争力を持っています。"
+            },
+            {
+                question: "チリで、特に盛んな産業として知られるものはどれでしょう？",
+                choices: ["石炭採掘", "銅鉱業", "茶葉栽培", "金融サービス"],
+                answerIndex: 1,
+                hint: "アンデス山脈の豊富な地下資源が関係しています。",
+                explanation: "チリはアンデス山脈の豊かな地下資源に恵まれ、特に銅の生産量は世界トップクラスです。銅鉱業はチリ経済の主要な柱となっています。"
+            },
+            {
+                question: "エジプトで、近年経済を支える重要な産業はどれでしょう？",
+                choices: ["綿花栽培", "精密機械工業", "スエズ運河関連産業", "漁業"],
+                answerIndex: 2,
+                hint: "国際貿易の要衝に位置しています。",
+                explanation: "エジプトはスエズ運河という世界的に重要な海上交通路を抱えており、運河の通行料収入や関連する港湾・物流サービスが経済の大きな部分を占めています。"
+            },
+            {
+                question: "アイルランドで、近年急速に発展している産業はどれでしょう？",
+                choices: ["重工業", "ソフトウェア開発・製薬", "伝統農業", "水産業"],
+                answerIndex: 1,
+                hint: "低い法人税率と英語圏であることが強みです。",
+                explanation: "アイルランドは、低い法人税率と英語圏であることから、多くの外資系IT企業や製薬企業が進出し、ソフトウェア開発や医薬品製造が経済の大きな柱となっています。"
+            },
+            {
+                question: "ニュージーランドで、主要な産業の一つとして挙げられるものはどれでしょう？",
+                choices: ["半導体製造", "羊毛・乳製品生産", "自動車製造", "重化学工業"],
+                answerIndex: 1,
+                hint: "国旗にも描かれている動物が関係しています。",
+                explanation: "ニュージーランドは広大な牧草地で羊や牛が飼育されており、羊毛や乳製品（チーズ、バターなど）の生産と輸出が主要な産業です。"
+            }
+        ];
+
+
+        let currentQuestionIndex = 0;
+        let selectedChoiceIndex = -1;
+        let shuffledEasyQuestions = [];
+        let shuffledHardQuestions = [];
+        let currentQuestionSet = easy_questions; // 初期は簡単問題セット
+        let score = 0;
+        let correctAnswersCount = 0;
+        let usedHint = false;
+        let timeLeft = 120; // 2分 = 120秒
+        let timerInterval;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const endScreen = document.getElementById('end-screen');
+        const startQuizButton = document.getElementById('start-quiz-button');
+        const questionText = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices-container');
+        const hintButton = document.getElementById('hint-button');
+        const submitButton = document.getElementById('submit-button');
+        const hintDisplay = document.getElementById('hint-display');
+        const hintText = document.getElementById('hint-text');
+        const explanationArea = document.getElementById('explanation-area');
+        const explanationText = document.getElementById('explanation-text');
+        const nextButton = document.getElementById('next-button');
+        const currentScoreDisplay = document.getElementById('current-score');
+        const timeLeftDisplay = document.getElementById('time-left');
+        const finalScoreValue = document.getElementById('final-score-value');
+        const restartButton = document.getElementById('restart-button');
+
+        // 問題をシャッフルする関数
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // 要素を入れ替える
+            }
+            return array;
+        }
+
+        // タイマー開始
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timeLeftDisplay.textContent = timeLeft;
+                if (timeLeft <= 30) {
+                    timeLeftDisplay.classList.add('timer-red'); // 残り30秒で赤色に
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endQuiz();
+                }
+            }, 1000);
+        }
+
+        // クイズ開始
+        startQuizButton.addEventListener('click', () => {
+            resetQuizState();
+            startScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            startTimer();
+            loadQuestion();
+        });
+
+        // 問題を読み込み、表示する
+        function loadQuestion() {
+            if (currentQuestionIndex >= currentQuestionSet.length) {
+                // 現在の問題セットを使い切ったら、別のセットから補充するか、終わらせる
+                if (correctAnswersCount >= 4 && shuffledHardQuestions.length > 0) {
+                    // 難しい問題セットから補充
+                    currentQuestionSet = shuffledHardQuestions;
+                    currentQuestionIndex = 0; // 難しい問題セットの最初から
+                } else if (shuffledEasyQuestions.length > 0) {
+                    // 簡単な問題セットから補充
+                    currentQuestionSet = shuffledEasyQuestions;
+                    currentQuestionIndex = 0;
+                } else {
+                    // 全ての問題を使い切った場合
+                    endQuiz();
+                    return;
+                }
+            }
+
+            const currentQuestion = currentQuestionSet[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question;
+            choicesContainer.innerHTML = '';
+            selectedChoiceIndex = -1; // 選択をリセット
+            usedHint = false; // ヒント使用状況をリセット
+
+            currentQuestion.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.textContent = `${index + 1}. ${choice}`;
+                button.className = 'choice-button';
+                button.onclick = () => selectChoice(index, button);
+                choicesContainer.appendChild(button);
+            });
+
+            // ヒントと解説を非表示にし、ボタンを有効化
+            hintDisplay.style.display = 'none';
+            explanationArea.style.display = 'none';
+            submitButton.style.display = 'block';
+            hintButton.style.display = 'block';
+            nextButton.style.display = 'none';
+            submitButton.disabled = true; // 選択するまで解答ボタンを無効化
+            hintButton.disabled = false; // ヒントボタンは常に有効
+
+            // 全ての選択肢ボタンを有効化し、スタイルをリセット
+            Array.from(choicesContainer.children).forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('selected', 'correct', 'wrong');
+            });
+        }
+
+        // 選択肢がクリックされた時の処理
+        function selectChoice(index, button) {
+            const prevSelected = choicesContainer.querySelector('.choice-button.selected');
+            if (prevSelected) {
+                prevSelected.classList.remove('selected');
+            }
+            button.classList.add('selected');
+            selectedChoiceIndex = index;
+            submitButton.disabled = false; // 選択したら解答ボタンを有効化
+        }
+
+        // ヒントボタンがクリックされた時の処理
+        hintButton.addEventListener('click', () => {
+            hintText.textContent = currentQuestionSet[currentQuestionIndex].hint;
+            hintDisplay.style.display = 'block';
+            hintButton.disabled = true; // 一度押したら無効化
+            usedHint = true; // ヒントを使用した
+        });
+
+        // 解答ボタンがクリックされた時の処理
+        submitButton.addEventListener('click', () => {
+            if (selectedChoiceIndex === -1) {
+                alert('選択肢を選んでください！');
+                return;
+            }
+
+            const currentQuestion = currentQuestionSet[currentQuestionIndex];
+            const choiceButtons = choicesContainer.querySelectorAll('.choice-button');
+
+            // 全ての選択肢ボタンを無効化
+            Array.from(choiceButtons).forEach(btn => btn.disabled = true);
+
+            // 正解の選択肢に「correct」スタイルを適用
+            choiceButtons[currentQuestion.answerIndex].classList.add('correct');
+
+            if (selectedChoiceIndex === currentQuestion.answerIndex) {
+                // 正解
+                if (usedHint) {
+                    score += 3; // ヒント使用後の正解
+                } else {
+                    score += 5; // 通常正解
+                    correctAnswersCount++; // 正答数をカウント
+                }
+                currentScoreDisplay.textContent = score;
+            } else {
+                // 不正解
+                score -= 2; // 不正解で減点
+                currentScoreDisplay.textContent = score;
+                // 選択した不正解の選択肢に「wrong」スタイルを適用
+                choiceButtons[selectedChoiceIndex].classList.add('wrong');
+                // 間違い時にコンテナを揺らす
+                document.getElementById('quiz-app').classList.add('shaking');
+                setTimeout(() => {
+                    document.getElementById('quiz-app').classList.remove('shaking');
+                }, 500);
+            }
+
+            // 解説を表示
+            explanationText.textContent = currentQuestion.explanation;
+            explanationArea.style.display = 'block';
+            submitButton.style.display = 'none'; // 解答ボタンを非表示
+            hintButton.style.display = 'none'; // ヒントボタンを非表示
+            nextButton.style.display = 'block'; // 次の問題へボタンを表示
+        });
+
+        // 次の問題へボタンがクリックされた時の処理
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            // 正答数が4問以上かつ、まだhard_questionsに未出題があれば、hard_questionsに切り替える
+            if (correctAnswersCount >= 4 && shuffledHardQuestions.length > 0 && currentQuestionSet === easy_questions) {
+                 // 難しい問題に切り替え (既に使った問題は除外するロジックが必要だが、今回はシンプルに全ハード問題から)
+                 currentQuestionSet = shuffledHardQuestions;
+                 currentQuestionIndex = 0; // ハード問題の最初から開始
+                 shuffledEasyQuestions = []; // 簡単問題を使い切ったとみなす
+                 console.log("難易度アップ！高校生レベルの問題に切り替わりました！");
+            }
+
+            loadQuestion();
+        });
+
+        // クイズ終了
+        function endQuiz() {
+            clearInterval(timerInterval);
+            quizScreen.style.display = 'none';
+            endScreen.style.display = 'block';
+            finalScoreValue.textContent = score;
+        }
+
+// クイズの状態をリセット
+        function resetQuizState() {
+            currentQuestionIndex = 0;
+            selectedChoiceIndex = -1;
+            score = 0;
+            correctAnswersCount = 0;
+            usedHint = false;
+            timeLeft = 120; // 2分 = 120秒
+            
+            clearInterval(timerInterval); // 念のためタイマーを停止
+
+            shuffledEasyQuestions = shuffleArray([...easy_questions]); // 簡単問題をシャッフル
+            shuffledHardQuestions = shuffleArray([...hard_questions]); // 難しい問題をシャッフル
+            currentQuestionSet = shuffledEasyQuestions; // 最初は簡単問題から
+
+            currentScoreDisplay.textContent = score;
+            timeLeftDisplay.textContent = timeLeft;
+            timeLeftDisplay.classList.remove('timer-red'); // 赤色を解除
+        }
+
+        // リスタートボタン
+        restartButton.addEventListener('click', () => {
+            endScreen.style.display = 'none';
+            startScreen.style.display = 'block';
+            resetQuizState();
+        });
+
+        // 最初のロード時にスタート画面を表示
+        document.addEventListener('DOMContentLoaded', () => {
+            resetQuizState(); // 初期状態をリセット
+            startScreen.style.display = 'block'; // スタート画面を表示
+            quizScreen.style.display = 'none';
+            endScreen.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
